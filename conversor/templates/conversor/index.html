@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laboratorio de representaciones</title>
+  <style>
+    :root{color-scheme:light;--ink:#17233c;--muted:#66738c;--blue:#315ee8;--line:#e1e7f0}*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}main{width:min(1050px,92vw);margin:48px auto}header{margin-bottom:28px}h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 8px;letter-spacing:-.04em}h2{margin:0 0 8px;font-size:1.35rem}p{color:var(--muted);margin:.25rem 0 1rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:20px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 12px 32px #21345b0b}label{display:block;font-weight:650;margin:14px 0 6px}input,select,textarea{width:100%;padding:12px 14px;font:inherit;border:1px solid #cbd5e4;border-radius:10px;background:white;color:var(--ink)}textarea{resize:vertical;min-height:110px}button{margin-top:14px;border:0;border-radius:10px;padding:12px 18px;color:white;background:var(--blue);font:inherit;font-weight:700;cursor:pointer}.result{margin-top:22px;overflow:auto}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:10px 12px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:.85rem}td code{color:#233b7b;overflow-wrap:anywhere}.error{background:#fff0f0;color:#a02222;border-radius:9px;padding:11px 13px;margin-top:16px}.empty{color:var(--muted);font-style:italic}@media(max-width:520px){main{margin:28px auto}.card{padding:18px}th,td{padding:8px 6px;font-size:.9rem}}
+  </style>
+</head>
+<body><main>
+  <header><h1>Laboratorio de representaciones</h1><p>Explora cómo se representan los números y el texto en una computadora.</p></header>
+  {% if error_general %}<div class="error" role="alert">{{ error_general }}</div>{% endif %}
+  <div class="grid">
+    <section class="card" aria-labelledby="numero-titulo">
+      <h2 id="numero-titulo">Conversión de bases</h2><p>Ingresa un valor entre 0 y 65,535 en la base seleccionada.</p>
+      <form method="post" action="{% url 'conversor:index' %}">{% csrf_token %}<input type="hidden" name="accion" value="convertir">
+        <label for="base">Base de origen</label><select id="base" name="base"><option value="2" {% if base == '2' %}selected{% endif %}>Binaria (2)</option><option value="8" {% if base == '8' %}selected{% endif %}>Octal (8)</option><option value="10" {% if base == '10' %}selected{% endif %}>Decimal (10)</option><option value="16" {% if base == '16' %}selected{% endif %}>Hexadecimal (16)</option></select>
+        <label for="numero">Número</label><input id="numero" name="numero" type="text" required value="{{ numero }}" placeholder="Ej. 42, 101010 o 2A">
+        <button type="submit">Convertir número</button>
+      </form>
+      {% if error_numero %}<div class="error" role="alert">{{ error_numero }}</div>{% endif %}
+      {% if conversion %}<div class="result"><table><thead><tr><th>Representación</th><th>Valor</th></tr></thead><tbody>
+        <tr><td>Decimal (10)</td><td><code>{{ conversion.decimal }}</code></td></tr><tr><td>Binario (2), alineado a bytes</td><td><code>{{ conversion.binario }}</code></td></tr><tr><td>Octal (8)</td><td><code>{{ conversion.octal }}</code></td></tr><tr><td>Hexadecimal (16)</td><td><code>{{ conversion.hexadecimal }}</code></td></tr>
+      </tbody></table><p>Bits significativos: <strong>{{ conversion.bits_significativos }}</strong>. Bytes requeridos: <strong>{{ conversion.bytes_requeridos }}</strong>.</p></div>{% endif %}
+    </section>
+    <section class="card" aria-labelledby="texto-titulo">
+      <h2 id="texto-titulo">Análisis de texto UTF-8</h2><p>Hasta 20 caracteres; consulta su código y bytes UTF-8.</p>
+      <form method="post" action="{% url 'conversor:index' %}">{% csrf_token %}<input type="hidden" name="accion" value="analizar">
+        <label for="texto">Texto (máximo 20 caracteres)</label><textarea id="texto" name="texto" maxlength="20" required placeholder="Escribe texto, acentos o emojis">{{ texto }}</textarea>
+        <button type="submit">Analizar texto</button>
+      </form>
+      {% if error_texto %}<div class="error" role="alert">{{ error_texto }}</div>{% endif %}
+      {% if analisis != None %}<div class="result"><table><thead><tr><th>Carácter</th><th>Decimal</th><th>Punto de código</th><th>Hexadecimal</th><th>Bytes UTF-8</th></tr></thead><tbody>
+        {% for item in analisis %}<tr><td>{{ item.caracter }}</td><td>{{ item.decimal }}</td><td><code>{{ item.unicode }}</code></td><td><code>{{ item.hexadecimal }}</code></td><td><code>{{ item.bytes_hex }}</code></td></tr>{% endfor %}
+      </tbody></table></div>{% endif %}
+    </section>
+  </div>
+</main></body></html>
